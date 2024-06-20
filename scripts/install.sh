@@ -1,4 +1,7 @@
 #!/bin/bash
+# Enable debugging output
+set -x
+
 sudo apt-get update -y
 sudo apt-get upgrade -y
 
