@@ -1,0 +1,32 @@
+@keyframes bounceClock {
+  0%{
+    transform: translateY(0%) translateX(0%);
+  }
+  11% {
+    transform: translateY(200%) translateX(75%);
+  }
+  22% {
+    transform: translateY(325%) translateX(50%);
+  }
+  33% {
+    transform: translateY(0%) translateX(10%);
+  }
+  44% {
+    transform: translateY(15%) translateX(0%);
+  }
+  55% {
+    transform: translateY(325%) translateX(40%);
+  }
+  66% {
+      transform: translateY(50%) translateX(75%);
+    }
+  77% {
+      transform: translateY(0%) translateX(60%);
+  }
+  88% {
+      transform: translateY(325%) translateX(30%);
+  }
+  100% {
+      transform: translateY(0%) translateX(0%);
+  }
+}
