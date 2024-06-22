@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['airbnb-typescript/base', 'plugin:storybook/recommended'],
+  extends: ['eslint:recommended','plugin:@typescript-eslint/eslint-recommended','plugin:@typescript-eslint/recommended', 'plugin:storybook/recommended', 'next'],
   root: true,
   env: {
     jest: true,
@@ -10,9 +10,8 @@ module.exports = {
     project: ['./tsconfig.json'],
     tsconfigRootDir: __dirname,
   },
-  extends: 'airbnb-typescript/base',
+  ignorePatterns: ['.eslintrc.js', '*.config.js'],  // Add this line to ignore .eslintrc.js
   plugins: [
-    'import',
     '@typescript-eslint',
   ],
   rules: {

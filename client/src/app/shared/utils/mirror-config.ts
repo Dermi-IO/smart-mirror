@@ -1,7 +1,7 @@
 import mirrorConfig from '../../mirror_config.json';
 import { MirrorConfigSchema, type MirrorConfig } from '../types/mirror-config';
 
-const validateMirrorConfig = (config: any) => {
+const validateMirrorConfig = (config: object) => {
     return MirrorConfigSchema.safeParse(config).success;
 }
 

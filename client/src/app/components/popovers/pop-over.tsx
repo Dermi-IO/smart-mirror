@@ -53,6 +53,7 @@ export const Popover: React.FC<PopoverProps> = ({ children, minWidth, minHeight 
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDragging, isResizing, initialPosition, initialSize]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

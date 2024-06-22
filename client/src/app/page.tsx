@@ -5,7 +5,7 @@ import { getMirrorConfig } from "./shared/utils/mirror-config";
 export default function Home() {
   const mirrorConfig = getMirrorConfig();
 
-  let { tilesX, tilesY, rotateInterfaceDegrees } = mirrorConfig;
+  const { tilesX, tilesY, rotateInterfaceDegrees } = mirrorConfig;
 
   const shouldRotateClass = rotateInterfaceDegrees ? `rotate-[${rotateInterfaceDegrees}]` : '';
 

@@ -6,9 +6,7 @@ sudo apt-get update -y
 sudo apt-get upgrade -y
 
 # Install required packages
-sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox
-sudo apt-get install --no-install-recommends chromium-browser
-sudo apt-get install motion
+sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit wayland wtype chromium-browser motion xscreensaver
 
 # Set variables
 KIOSK_URL="https://www.google.com"
@@ -41,9 +39,16 @@ AUTOSTART_CMD_ARRAY=(
 
 touch "$AUTOSTART_FILE"
 
+# Make sure the autostart file is executable
+chmod +x "$AUTOSTART_FILE"
+
 # Add commands to autostart file
 for cmd in "${AUTOSTART_CMD_ARRAY[@]}"; do
-    if ! grep -Fxq "$cmd" "$AUTOSTART_FILE"; then
+    if ! grep -Fq "$cmd" "$AUTOSTART_FILE"; then
+        # Append " &" to cmd if it's not the last item
+        if [[ $index -ne $((array_length - 1)) ]]; then
+            cmd="$cmd &"
+        fi
         echo "$cmd" >> "$AUTOSTART_FILE"
     fi
 done
