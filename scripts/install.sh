@@ -157,10 +157,6 @@ BASHPROFILE_CMD_ARRAY=(
     "xscreensaver -no-splash"
 )
 
-ENV_VAR_ARRAY=(
-    ("KIOSK_URL" "$KIOSK_URL")
-)
-
 touch "$BASH_PROFILE"
 
 # Add commands to bash profile
@@ -171,9 +167,15 @@ for cmd in "${BASHPROFILE_CMD_ARRAY[@]}"; do
     fi
 done
 
-for var in "${ENV_VAR_ARRAY[@]}"; do
-    var_name="${var[0]}"
-    var_value="${var[1]}"
+# Define environment variable dictionary
+declare -A ENV_VAR_ARRAY
+ENV_VAR_ARRAY["KIOSK_URL"]=$KIOSK_URL
+
+# Iterate over env vars and add to bash profile
+for key in "${ENV_VAR_ARRAY[@]}"; do
+    var_name="$key"
+    var_value="${ENV_VAR_ARRAY[$key]}"
+    
     if ! grep -q "export $var_name=" "$BASH_PROFILE"; then
         echo "export $var_name=\"$var_value\"" >> "$BASH_PROFILE"
         echo "Added '$var_name' to $BASH_PROFILE"
