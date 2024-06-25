@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
+    image: timfentoncortina/dermi-mirror-api:latest
     volumes:
       - ./database:/usr/src/app/database
     environment:
@@ -14,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.client
+    image: timfentoncortina/dermi-mirror-client:latest
     environment:
       - NODE_ENV=production
     ports:
