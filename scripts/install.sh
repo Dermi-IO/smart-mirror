@@ -152,3 +152,7 @@ launch_chromium() {
     echo "Launching Chromium..."
     chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
 }
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
