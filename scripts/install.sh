@@ -9,7 +9,7 @@ sudo apt-get update -y
 sudo apt-get upgrade -y
 
 # Install required packages
-sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit wayland wtype chromium-browser motion xscreensaver
+sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit wtype chromium-browser motion xscreensaver
 
 # Install docker
 curl -fsSL https://get.docker.com | sh
@@ -27,8 +27,9 @@ SYSTEM_MOTION_CONF="/etc/motion/motion.conf"
 MOTION_DAEMON_FILE="/etc/default/motion"
 USER_MOTION_CONF="$HOME/.motion/motion.conf"
 USER_CAMERA_CONF="$HOME/.motion/camera1.conf"
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
-chmod +x "run.sh"
+chmod +x "$SCRIPT_DIR/run.sh"
 
 # Ensure directories exist
 mkdir -p "$HOME/.config/openbox" "$HOME/.motion" "/var/lib/motion"
