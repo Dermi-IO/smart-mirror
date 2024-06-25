@@ -2,6 +2,8 @@
 
 # This script will install using the latest version of the API / Client from docker hub
 
+CURRENT_USER="$(logname)"
+
 ## Helper functions
 
 display_menu() {
@@ -26,9 +28,10 @@ reboot_system() {
     shutdown -r now
 }
 
+# Launch Chromium in kiosk mode in the context of the non-root user
 launch_chromium() {
     echo "Launching Chromium..."
-    chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
+    sudo -u "$CURRENT_USER" chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
 }
 
 command_exists() {
