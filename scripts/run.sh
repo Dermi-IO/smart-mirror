@@ -1,4 +1,28 @@
+#!/bin/bash
 # Run the server and launch chromium ( if you need to relaunch without reboot )
+
+# Helper functions
+
+check_docker_image() {
+    docker images "$1" | grep -q "$1"
+    if [ $? -eq 0 ]; then
+        echo "Docker image $1 is already pulled."
+    else
+        echo "Docker image $1 is not pulled."
+        echo "Pulling Docker image $1..."
+        docker pull "$1"
+        if [ $? -eq 0 ]; then
+            echo "Docker image $1 pulled successfully."
+        else
+            echo "Failed to pull Docker image $1. Please check your Docker installation and network connection."
+            exit 1
+        fi
+    fi
+}
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
 
 # Check if Docker is installed
 if ! command_exists docker; then
@@ -32,26 +56,3 @@ docker run -d --name dermi-mirror-client \
   timfentoncortina/dermi-mirror-client:latest
 
 chromium-browser  --noerrdialogs --disable-infobars --kiosk \"$KIOSK_URL\"
-
-# Helper functions
-
-check_docker_image() {
-    docker images "$1" | grep -q "$1"
-    if [ $? -eq 0 ]; then
-        echo "Docker image $1 is already pulled."
-    else
-        echo "Docker image $1 is not pulled."
-        echo "Pulling Docker image $1..."
-        docker pull "$1"
-        if [ $? -eq 0 ]; then
-            echo "Docker image $1 pulled successfully."
-        else
-            echo "Failed to pull Docker image $1. Please check your Docker installation and network connection."
-            exit 1
-        fi
-    fi
-}
-
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}

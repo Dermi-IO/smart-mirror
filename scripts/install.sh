@@ -2,6 +2,39 @@
 
 # This script will install using the latest version of the API / Client from docker hub
 
+## Helper functions
+
+display_menu() {
+    echo "Choose an option:"
+    echo "1. Reboot the system"
+    echo "2. Launch Chromium"
+    echo "3. Exit"
+
+    read -rp "Enter your choice [1-3]: " choice
+
+    case $choice in
+        1) reboot_system ;;
+        2) launch_chromium ;;
+        3) exit ;;
+        *) echo "Invalid choice. Please enter a number between 1 and 3."
+           display_menu ;;
+    esac
+}
+
+reboot_system() {
+    echo "Rebooting the system..."
+    shutdown -r now
+}
+
+launch_chromium() {
+    echo "Launching Chromium..."
+    chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
+}
+
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # Enable debugging output
 set -x
 
@@ -122,37 +155,3 @@ elif ! grep -Fxq "start_motion_daemon=yes" "$MOTION_DAEMON_FILE"; then
 fi
 
 display_menu
-
-## Helper functions
-
-display_menu() {
-    echo "Choose an option:"
-    echo "1. Reboot the system"
-    echo "2. Launch Chromium"
-    echo "3. Exit"
-
-    read -rp "Enter your choice [1-3]: " choice
-
-    case $choice in
-        1) reboot_system ;;
-        2) launch_chromium ;;
-        3) exit ;;
-        *) echo "Invalid choice. Please enter a number between 1 and 3."
-           display_menu ;;
-    esac
-}
-
-reboot_system() {
-    echo "Rebooting the system..."
-    shutdown -r now
-}
-
-# Function to launch Chromium
-launch_chromium() {
-    echo "Launching Chromium..."
-    chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
-}
-
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
