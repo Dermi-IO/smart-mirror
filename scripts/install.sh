@@ -6,6 +6,32 @@ CURRENT_USER="$(logname)"
 
 ## Helper functions
 
+append_or_update_section() {
+    local section_name=$1
+    shift
+    local settings=("$@")
+
+    # Check if section exists in the INI file
+    if grep -q "^\[$section_name\]" "$WAYFIRE_INI"; then
+        # Section exists, update its settings
+        for setting in "${settings[@]}"; do
+            if grep -q "^$setting" "$WAYFIRE_INI"; then
+                # Setting already exists, replace it
+                sed -i "s/^$setting.*/$setting/" "$WAYFIRE_INI"
+            else
+                # Setting does not exist, append it below the section header
+                sed -i "/^\[$section_name\]/a $setting" "$WAYFIRE_INI"
+            fi
+        done
+    else
+        # Section does not exist, append it
+        echo "[$section_name]" >> "$WAYFIRE_INI"
+        for setting in "${settings[@]}"; do
+            echo "$setting" >> "$WAYFIRE_INI"
+        done
+    fi
+}
+
 display_local_menu() {
     echo "Choose an option:"
     echo "1. Reboot the system"
@@ -53,6 +79,8 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+### START SCRIPT
+
 # Enable debugging output
 set -x
 
@@ -73,7 +101,7 @@ docker pull timfentoncortina/dermi-mirror-client:latest
 
 # Set variables
 KIOSK_URL="http://127.0.0.1:3000"
-AUTOSTART_FILE="$HOME/.config/openbox/autostart"
+WAYFIRE_INI="$HOME/.config/wayfire.ini"
 BASH_PROFILE="$HOME/.bash_profile"
 SYSTEM_MOTION_CONF="/etc/motion/motion.conf"
 MOTION_DAEMON_FILE="/etc/default/motion"
@@ -91,34 +119,36 @@ sudo chgrp motion "/var/lib/motion"
 sudo chmod g+rwx "/var/lib/motion"
 
 # Define auto start commands, includes "motion -n" to start motion on openbox startup
-AUTOSTART_CMD_ARRAY=(
-    "xset -dpms"
-    "xset s off"
-    "xset s blank"
-    "xset s 300"
+WAYFIRE_AUTOSTART_SETTINGS=(
     "sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' ~/.config/chromium/'Local State'"
     "sed -i 's/\"exited_cleanly\":false/\"exited_cleanly\":true/; s/\"exit_type\":\"[^\"]\+\"/\"exit_type\":\"Normal\"/' ~/.config/chromium/Default/Preferences"
     "docker run -d --name dermi-mirror-api -v \"$(pwd)/../config/server.json:/usr/src/app/server.json\" -e NODE_ENV=production -p 5000:5000 timfentoncortina/dermi-mirror-api:latest"
     "docker run -d --name dermi-mirror-client -v \"$(pwd)/../config/mirror_config.json:/usr/src/app/mirror_config.json\" -e NODE_ENV=production -p 3000:3000 timfentoncortina/dermi-mirror-client:latest"
     "chromium-browser  --noerrdialogs --disable-infobars --kiosk \"$KIOSK_URL\""
-    "motion -n"
+    "sudo -E motion -n"
 )
 
-touch "$AUTOSTART_FILE"
+WAYFIRE_CORE_SETTINGS=(
+    "plugins = alpha animate autostart autostart-static command pixdecor expo fast-switcher fisheye grid idle invert move oswitch place resize switcher vswitch window-rules wm-actions wrot zoom winshadows"
+)
 
-# Make sure the autostart file is executable
-chmod +x "$AUTOSTART_FILE"
+WAYFIRE_IDLE_SETTINGS=(
+    "screensaver = true"
+    "screensaver_timeout = 30"
+    "dpms = false"
+    "disable_on_fullscreen = false"
+)
 
-# Add commands to autostart file
-for cmd in "${AUTOSTART_CMD_ARRAY[@]}"; do
-    if ! grep -Fq "$cmd" "$AUTOSTART_FILE"; then
-        # Append " &" to cmd if it's not the last item
-        if [[ $index -ne $((array_length - 1)) ]]; then
-            cmd="$cmd &"
-        fi
-        echo "$cmd" >> "$AUTOSTART_FILE"
-    fi
-done
+touch "$WAYFIRE_INI"
+
+# Append or update wayfire [autostart] section
+append_or_update_section "autostart" "${WAYFIRE_AUTOSTART_SETTINGS[@]}"
+
+# Append or update wayfire [core] section
+append_or_update_section "core" "${WAYFIRE_CORE_SETTINGS[@]}"
+
+# Append or update wayfire [idle] section
+append_or_update_section "idle" "${WAYFIRE_IDLE_SETTINGS[@]}"
 
 
 # Define bash profile commands, includes "startx" to start x server if not running
