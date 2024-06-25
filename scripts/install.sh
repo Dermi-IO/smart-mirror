@@ -74,7 +74,6 @@ docker pull timfentoncortina/dermi-mirror-client:latest
 # Set variables
 KIOSK_URL="http://127.0.0.1:3000"
 AUTOSTART_FILE="$HOME/.config/openbox/autostart"
-ENV_FILE="$HOME/.config/openbox/environment"
 BASH_PROFILE="$HOME/.bash_profile"
 SYSTEM_MOTION_CONF="/etc/motion/motion.conf"
 MOTION_DAEMON_FILE="/etc/default/motion"
@@ -121,29 +120,15 @@ for cmd in "${AUTOSTART_CMD_ARRAY[@]}"; do
     fi
 done
 
-# Define environment variables
-ENV_VAR_ARRAY=(
-    "KIOSK_URL=$KIOSK_URL"
-)
-
-touch "$ENV_FILE"
-
-# Add environment variables to environment file
-for var in "${ENV_VAR_ARRAY[@]}"; do
-    if grep -q "^${var%=*}=" "$ENV_FILE"; then
-        # If found, update the existing value using sed
-        sed -i "s|^${var%=*}=.*|${var}|g" "$ENV_FILE"
-        echo "Updated ${var%=*} in $ENV_FILE"
-    else
-        # If not found, append the variable to the ENV_FILE
-        echo "$var" >> "$ENV_FILE"
-        echo "Added ${var%=*} to $ENV_FILE"
-    fi
-done
 
 # Define bash profile commands, includes "startx" to start x server if not running
 BASHPROFILE_CMD_ARRAY=(
     "[[ -z \"$DISPLAY\" && \"$XDG_VTNR\" -eq 1 ]] && startx"
+    "xscreensaver -no-splash"
+)
+
+ENV_VAR_ARRAY=(
+    ("KIOSK_URL" "$KIOSK_URL")
 )
 
 touch "$BASH_PROFILE"
@@ -153,6 +138,18 @@ for cmd in "${BASHPROFILE_CMD_ARRAY[@]}"; do
     if ! grep -Fxq "$cmd" "$BASH_PROFILE"; then
         echo "$cmd" >> "$BASH_PROFILE"
         echo "Added '$cmd' to $BASH_PROFILE"
+    fi
+done
+
+for var in "${ENV_VAR_ARRAY[@]}"; do
+    var_name="${var[0]}"
+    var_value="${var[1]}"
+    if ! grep -q "export $var_name=" "$BASH_PROFILE"; then
+        echo "export $var_name=\"$var_value\"" >> "$BASH_PROFILE"
+        echo "Added '$var_name' to $BASH_PROFILE"
+    else 
+        sed -i "s/^export $var_name=.*/export $var_name=\"$var_value\"/" "$BASH_PROFILE"
+        echo "Updated '$var_name' in $BASH_PROFILE"
     fi
 done
 
