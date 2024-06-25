@@ -11,8 +11,10 @@ sudo apt-get upgrade -y
 # Install required packages
 sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit wtype chromium-browser motion xscreensaver
 
-# Install docker
-curl -fsSL https://get.docker.com | sh
+# Check if Docker is installed, install if not
+if ! command_exists docker; then
+    curl -fsSL https://get.docker.com | sh
+fi
 
 # Pull docker images 
 docker pull timfentoncortina/dermi-mirror-api:latest
