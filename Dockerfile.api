@@ -5,7 +5,7 @@ FROM node:18
 FROM base AS deps
 
 # Create and change to the app directory.
-WORKDIR /usr/src/app
+WORKDIR /usr/src/api
 
 # Copy package.json and yarn.lock first to leverage Docker cache
 COPY api/package.json api/yarn.lock api/ecosystem.config.js ./
@@ -15,7 +15,7 @@ RUN yarn --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
-WORKDIR /usr/src/app
+WORKDIR /usr/src/api
 COPY --from=deps /app/node_modules ./node_modules
 
 # Install pm2 globally
@@ -27,7 +27,7 @@ COPY api .
 RUN yarn build
 
 FROM base AS runner
-WORKDIR /usr/src/app
+WORKDIR /usr/src/api
 
 # Expose the API port.
 EXPOSE 5000

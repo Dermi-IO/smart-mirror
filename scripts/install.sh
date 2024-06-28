@@ -1,85 +1,8 @@
 #!/bin/bash
 
-# This script will install using the latest version of the API / Client from docker hub
+source helper_functions.sh
 
 CURRENT_USER="$(logname)"
-
-## Helper functions
-
-append_or_update_section() {
-    local section_name=$1
-    shift
-    local settings=("$@")
-
-    # Check if section exists in the INI file
-    if grep -q "^\[$section_name\]" "$WAYFIRE_INI"; then
-        # Section exists, update its settings
-        for setting in "${settings[@]}"; do
-            if grep -q "^$setting" "$WAYFIRE_INI"; then
-                # Setting already exists, replace it
-                sed -i "s/^$setting.*/$setting/" "$WAYFIRE_INI"
-            else
-                # Setting does not exist, append it below the section header
-                sed -i "/^\[$section_name\]/a $setting" "$WAYFIRE_INI"
-            fi
-        done
-    else
-        # Section does not exist, append it
-        echo "[$section_name]" >> "$WAYFIRE_INI"
-        for setting in "${settings[@]}"; do
-            echo "$setting" >> "$WAYFIRE_INI"
-        done
-    fi
-}
-
-display_local_menu() {
-    echo "Choose an option:"
-    echo "1. Reboot the system"
-    echo "2. Launch Chromium"
-    echo "3. Exit"
-
-    read -rp "Enter your choice [1-3]: " choice
-
-    case $choice in
-        1) reboot_system ;;
-        2) launch_chromium ;;
-        3) exit ;;
-        *) echo "Invalid choice. Please enter a number between 1 and 3."
-           display_menu ;;
-    esac
-}
-
-display_ssh_menu() {
-    echo "Choose an option:"
-    echo "1. Reboot the system"
-    echo "2. Exit"
-
-    read -rp "Enter your choice [1-2]: " choice
-
-    case $choice in
-        1) reboot_system ;;
-        2) exit ;;
-        *) echo "Invalid choice. Please enter a number between 1 and 3."
-           display_menu ;;
-    esac
-}
-
-reboot_system() {
-    echo "Rebooting the system..."
-    shutdown -r now
-}
-
-# Launch Chromium in kiosk mode in the context of the non-root user
-launch_chromium() {
-    echo "Launching Chromium..."
-    sudo -u "$CURRENT_USER" chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
-}
-
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-### START SCRIPT
 
 # Enable debugging output
 set -x
@@ -88,16 +11,20 @@ sudo apt-get update -y
 sudo apt-get upgrade -y
 
 # Install required packages
-sudo apt-get install --no-install-recommends xserver-xorg x11-xserver-utils xinit wtype chromium-browser motion xscreensaver
+sudo apt-get install --no-install-recommends wayfire wlroots wtype chromium-browser xscreensaver rpicam-apps libcamera-tools seatd xdg-user-dirs
 
 # Check if Docker is installed, install if not
 if ! command_exists docker; then
     curl -fsSL https://get.docker.com | sh
 fi
 
-# Pull docker images 
-docker pull timfentoncortina/dermi-mirror-api:latest
-docker pull timfentoncortina/dermi-mirror-client:latest
+# Add current user to the docker group
+usermod -aG docker "$CURRENT_USER"
+
+# Refresh permissions for docker
+newgrp docker
+
+docker_method=$(display_install_menu)
 
 # Set variables
 KIOSK_URL="http://127.0.0.1:3000"
@@ -111,21 +38,22 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 chmod +x "$SCRIPT_DIR/run.sh"
 
-# Ensure directories exist
-mkdir -p "$HOME/.config/openbox" "$HOME/.motion" "/var/lib/motion"
+sudo cp ./docker/* /etc/systemd/system/
 
-# Set permissions for motion directory
-sudo chgrp motion "/var/lib/motion"
-sudo chmod g+rwx "/var/lib/motion"
+case $docker_method in
+    1)
+        systemctl enable smarty-docker-hub-api
+        systemctl enable smarty-docker-hub-client
 
 # Define auto start commands, includes "motion -n" to start motion on openbox startup
 WAYFIRE_AUTOSTART_SETTINGS=(
-    "sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' ~/.config/chromium/'Local State'"
-    "sed -i 's/\"exited_cleanly\":false/\"exited_cleanly\":true/; s/\"exit_type\":\"[^\"]\+\"/\"exit_type\":\"Normal\"/' ~/.config/chromium/Default/Preferences"
-    "docker run -d --name dermi-mirror-api -v \"$(pwd)/../config/server.json:/usr/src/app/server.json\" -e NODE_ENV=production -p 5000:5000 timfentoncortina/dermi-mirror-api:latest"
-    "docker run -d --name dermi-mirror-client -v \"$(pwd)/../config/mirror_config.json:/usr/src/app/mirror_config.json\" -e NODE_ENV=production -p 3000:3000 timfentoncortina/dermi-mirror-client:latest"
-    "chromium-browser  --noerrdialogs --disable-infobars --kiosk \"$KIOSK_URL\""
-    "sudo -E motion -n"
+    "kioskUrl = export KIOSK_URL=\"http://127.0.0.1:3000\""
+    "cleanExitLocalState = sed -i 's/\"exited_cleanly\":false/\"exited_cleanly\":true/' ~/.config/chromium/'Local State'"
+    "cleanExitPrefs = sed -i 's/\"exited_cleanly\":false/\"exited_cleanly\":true/; s/\"exit_type\":\"[^\"]\+\"/\"exit_type\":\"Normal\"/' ~/.config/chromium/Default/Preferences"
+    "mirrorAPI = docker run -d --rm --name dermi-mirror-api -v \"$(pwd)/../config:/usr/src/app/config\" -e NODE_ENV=production -p 5000:5000 timfentoncortina/dermi-mirror-api:latest"
+    "mirrorClient = docker run -d --rm --name dermi-mirror-client -v \"$(pwd)/../config:/usr/src/app/config\" -e NODE_ENV=production -p 3000:3000 timfentoncortina/dermi-mirror-client:latest"
+    "chromium = chromium-browser $KIOSK_URL --kiosk --disable-gpu --noerrdialogs --disable-infobars --no-first-run --ozone-platform=wayland --enable-features=OverlayScrollbar --start-maximized"
+    "motion = motion -n"
 )
 
 WAYFIRE_CORE_SETTINGS=(
@@ -151,27 +79,13 @@ append_or_update_section "core" "${WAYFIRE_CORE_SETTINGS[@]}"
 append_or_update_section "idle" "${WAYFIRE_IDLE_SETTINGS[@]}"
 
 
-# Define bash profile commands, includes "startx" to start x server if not running
-BASHPROFILE_CMD_ARRAY=(
-    "[[ -z \"$DISPLAY\" && \"$XDG_VTNR\" -eq 1 ]] && startx"
-    "xscreensaver -no-splash"
-)
-
 touch "$BASH_PROFILE"
-
-# Add commands to bash profile
-for cmd in "${BASHPROFILE_CMD_ARRAY[@]}"; do
-    if ! grep -Fxq "$cmd" "$BASH_PROFILE"; then
-        echo "$cmd" >> "$BASH_PROFILE"
-        echo "Added '$cmd' to $BASH_PROFILE"
-    fi
-done
 
 # Define environment variable dictionary
 declare -A ENV_VAR_ARRAY
 ENV_VAR_ARRAY["KIOSK_URL"]=$KIOSK_URL
 
-# Iterate over env vars and add to bash profile
+# Iterate over env vars and add to bash profile first, to ensure commands dont block setting vars
 for key in "${ENV_VAR_ARRAY[@]}"; do
     var_name="$key"
     var_value="${ENV_VAR_ARRAY[$key]}"
@@ -182,6 +96,19 @@ for key in "${ENV_VAR_ARRAY[@]}"; do
     else 
         sed -i "s/^export $var_name=.*/export $var_name=\"$var_value\"/" "$BASH_PROFILE"
         echo "Updated '$var_name' in $BASH_PROFILE"
+    fi
+done
+
+# Define bash profile commands, includes "startx" to start x server if not running
+BASHPROFILE_CMD_ARRAY=(
+    "[[ -z \"$DISPLAY\" && \"$XDG_VTNR\" -eq 1 ]] && startx"
+)
+
+# Add commands to bash profile
+for cmd in "${BASHPROFILE_CMD_ARRAY[@]}"; do
+    if ! grep -Fxq "$cmd" "$BASH_PROFILE"; then
+        echo "$cmd" >> "$BASH_PROFILE"
+        echo "Added '$cmd' to $BASH_PROFILE"
     fi
 done
 

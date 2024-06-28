@@ -1,32 +1,20 @@
-@keyframes bounceClock {
-  0%{
-    transform: translateY(0%) translateX(0%);
+#clock {
+  animation: slideVert 10s linear alternate infinite, slideHori 10s linear alternate infinite;
+}
+
+@keyframes slideVert {
+  from {
+    top: 0px; /* Starting position for vertical animation */
   }
-  11% {
-    transform: translateY(200%) translateX(75%);
+  to {
+    top: calc(100% - 35px); /* Ending position for vertical animation */
   }
-  22% {
-    transform: translateY(325%) translateX(50%);
+}
+@keyframes slideHori {
+  from {
+    left: 0; /* Starting position for horizontal animation */
   }
-  33% {
-    transform: translateY(0%) translateX(10%);
-  }
-  44% {
-    transform: translateY(15%) translateX(0%);
-  }
-  55% {
-    transform: translateY(325%) translateX(40%);
-  }
-  66% {
-      transform: translateY(50%) translateX(75%);
-    }
-  77% {
-      transform: translateY(0%) translateX(60%);
-  }
-  88% {
-      transform: translateY(325%) translateX(30%);
-  }
-  100% {
-      transform: translateY(0%) translateX(0%);
+  to {
+    left: calc(100% - 200px); /* Ending position for horizontal animation */
   }
 }

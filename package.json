@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "animejs": "^3.2.2",
+    "react-hot-keys": "^2.7.3"
+  }
+}

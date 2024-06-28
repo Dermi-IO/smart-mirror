@@ -1,11 +1,11 @@
-import mirrorConfig from '../../mirror_config.json';
+import mirrorConfig from '../../default_configs/mirror_config';
 import { MirrorConfigSchema, type MirrorConfig } from '../types/mirror-config';
 
-const validateMirrorConfig = (config: object) => {
+const validateMirrorConfig = (config: object): boolean => {
     return MirrorConfigSchema.safeParse(config).success;
 }
 
-export const getMirrorConfig = () => {
+export const getMirrorConfig = (): MirrorConfig => {
     if (!validateMirrorConfig(mirrorConfig)) {
         throw new Error('Invalid mirror config');
     }

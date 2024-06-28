@@ -13,8 +13,8 @@ const Clock: React.FC = () => {
 
   return (
     <div className="clock-container relative w-full h-full">
-      <div className="moving-clock absolute animate-[bounceClock_30s_linear_infinite]">
-        <div className="text-white text-4xl font-bold" data-testid="clock-tile">
+      <div id="clock" className="moving-clock absolute">
+        <div className="text-white text-4xl font-bold relative" data-testid="clock-tile">
             {date.toLocaleTimeString()}
         </div>
       </div>
