@@ -14,11 +14,6 @@ COPY client/package.json client/yarn.lock client/ecosystem.config.js ./
 # Install dependencies.
 RUN yarn --frozen-lockfile
 
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /usr/src/client
-COPY --from=deps /app/node_modules ./node_modules
-
 # Install pm2 globally
 RUN yarn global add pm2
 
@@ -27,9 +22,6 @@ COPY client .
 
 # Build the Next.js app.
 RUN yarn run build
-
-FROM base AS runner
-WORKDIR /usr/src/client
 
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.

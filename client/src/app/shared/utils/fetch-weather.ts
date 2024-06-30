@@ -1,4 +1,4 @@
-import creds from '@/../../config/credentials.json';
+import creds from '@/config/credentials.json';
 import { WeatherResponse } from '../types/weather';
 
 export const fetchWeather = async (  ): Promise<WeatherResponse | null> => {

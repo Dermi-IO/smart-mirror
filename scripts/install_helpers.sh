@@ -26,24 +26,31 @@ append_or_update_section() {
     fi
 }
 
-display_local_menu() {
-    echo "Choose an option:"
-    echo "1. Reboot the system"
-    echo "2. Launch Chromium"
-    echo "3. Exit"
+select_mode() {
+    local mode
 
-    read -rp "Enter your choice [1-3]: " choice
+    while true; do
+        echo "Do you want to use landscape or portrait mode? (l/p)"
+        read -r mode
 
-    case $choice in
-        1) reboot_system ;;
-        2) launch_chromium ;;
-        3) exit ;;
-        *) echo "Invalid choice. Please enter a number between 1 and 3."
-           display_menu ;;
-    esac
+        # Convert user input to lowercase for case-insensitive comparison
+        mode=$(echo "$mode" | tr '[:upper:]' '[:lower:]')
+
+        # Check user input and act accordingly
+        if [ "$mode" = "l" ] || [ "$mode" = "landscape" ]; then
+            mode="landscape"
+            break
+        elif [ "$mode" = "p" ] || [ "$mode" = "portrait" ]; then
+            mode="portrait"
+            break
+        else
+            echo "Invalid choice. Please enter 'l' for landscape or 'p' for portrait."
+        fi
+    done
+
+    # Store the selected mode in a global variable (optional)
+    SELECTED_MODE=$mode
 }
-
-# helper_functions.sh
 
 # Function to display install menu and get user choice
 display_install_menu() {
@@ -77,7 +84,7 @@ display_install_menu() {
     echo "$choice"
 }
 
-
+# Display the ssh menu options for the end of the script (ssh install)
 display_ssh_menu() {
     echo "Choose an option:"
     echo "1. Reboot the system"
@@ -88,6 +95,24 @@ display_ssh_menu() {
     case $choice in
         1) reboot_system ;;
         2) exit ;;
+        *) echo "Invalid choice. Please enter 1 or 2."
+           display_menu ;;
+    esac
+}
+
+# Display the local menu options for the end of the script (non ssh install)
+display_local_menu() {
+    echo "Choose an option:"
+    echo "1. Reboot the system"
+    echo "2. Launch Chromium"
+    echo "3. Exit"
+
+    read -rp "Enter your choice [1-3]: " choice
+
+    case $choice in
+        1) reboot_system ;;
+        2) launch_chromium ;;
+        3) exit ;;
         *) echo "Invalid choice. Please enter a number between 1 and 3."
            display_menu ;;
     esac
@@ -101,7 +126,7 @@ reboot_system() {
 # Launch Chromium in kiosk mode in the context of the non-root user
 launch_chromium() {
     echo "Launching Chromium..."
-    sudo -u "$CURRENT_USER" chromium-browser --noerrdialogs --disable-infobars --kiosk "$KIOSK_URL"
+    sudo -u "$CURRENT_USER" chromium-browser "http://localhost:3000" --enable-force-dark --kiosk --noerrdialogs --disable-infobars --no-first-run --ozone-platform=wayland --enable-features=OverlayScrollbar --start-maximized
 }
 
 command_exists() {

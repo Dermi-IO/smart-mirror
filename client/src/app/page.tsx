@@ -17,8 +17,6 @@ export default function Home() {
     </div>
   ));
 
-  console.log(gridItems);
-
   return (
     <main
       className={`grid w-full h-screen p-${mirrorPadding ?? 24}`}

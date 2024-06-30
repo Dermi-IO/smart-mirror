@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.api
     image: timfentoncortina/dermi-mirror-api:latest
+    restart: unless-stopped
     volumes:
       - ./configs:/configs
     environment:
@@ -16,6 +17,7 @@ services:
       context: .
       dockerfile: Dockerfile.client
     image: timfentoncortina/dermi-mirror-client:latest
+    restart: unless-stopped
     volumes:
       - ./configs:/configs
     environment:
@@ -24,6 +26,3 @@ services:
       - "3000:3000"
     depends_on:
       - api
-
-volumes:
-  database:
