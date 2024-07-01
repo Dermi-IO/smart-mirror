@@ -3,7 +3,7 @@
 # Get the user the triggered this, since it was run via sudo we need to do it via logname
 CURRENT_USER="$(logname)"
 
-source /home/$CURRENT_USER/smarty/install_helpers.sh
+source /home/$CURRENT_USER/smarty/scripts/install_helpers.sh
 
 # Prompt the user to ask if they will use landscape or portrait available via SELECTED_MODE
 select_mode
