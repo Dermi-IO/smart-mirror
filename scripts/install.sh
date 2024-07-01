@@ -1,9 +1,9 @@
 #!/bin/bash
 
-source $HOME/smarty/install_helpers.sh
-
 # Get the user the triggered this, since it was run via sudo we need to do it via logname
 CURRENT_USER="$(logname)"
+
+source /home/$CURRENT_USER/smarty/install_helpers.sh
 
 # Prompt the user to ask if they will use landscape or portrait available via SELECTED_MODE
 select_mode
@@ -41,7 +41,7 @@ usermod -aG docker "$CURRENT_USER"
 newgrp docker
 
 # Make sure the user owns the .docker dir 
-sudo chown -R $CURRENT_USER $HOME/.docker
+sudo chown -R $CURRENT_USER /home/$CURRENT_USER/.docker
 
 # Install docker-compose
 if ! command_exists docker-compose; then
@@ -75,8 +75,8 @@ sudo update-initramfs -u
 # Set variables
 KIOSK_URL="http://127.0.0.1:3000"
 DEFAULT_WF_INI="./configs/wayfire.ini"
-WAYFIRE_INI="$HOME/.config/wayfire.ini"
-BASH_RC="$HOME/.bashrc"
+WAYFIRE_INI="/home/$CURRENT_USER/.config/wayfire.ini"
+BASH_RC="/home/$CURRENT_USER/.bashrc"
 CMDLINE_FILE="/boot/cmdline.txt"
 
 # Define environment variable dictionary
@@ -105,7 +105,7 @@ touch "$BASH_RC"
 # Define environment variable dictionary
 declare -A ENV_VAR_ARRAY
 ENV_VAR_ARRAY["KIOSK_URL"]="$KIOSK_URL"
-ENV_VAR_ARRAY["WALLPAPER_IMAGE"]="$HOME/smarty/resources/wallpaper/$SELECTED_MODE.png"
+ENV_VAR_ARRAY["WALLPAPER_IMAGE"]="/home/$CURRENT_USER/smarty/resources/wallpaper/$SELECTED_MODE.png"
 
 # Iterate over env vars and add to bash profile first, to ensure commands dont block setting vars
 for key in "${ENV_VAR_ARRAY[@]}"; do
