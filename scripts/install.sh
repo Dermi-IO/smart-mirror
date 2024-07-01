@@ -21,13 +21,19 @@ sudo apt-get install --no-install-recommends \
   libcamera-tools \
   plymouth \
   plymouth-themes \
+  raspberrypi-ui-mods \
   rpicam-apps \
   seatd \
   wayfire \
-  wlroots \
+  wcm \
+  wf-shell \
   wtype \
   xdg-user-dirs \
+  xwayland \
   xscreensaver
+
+# 
+sudo raspi-config nonint do_wayland W2
 
 # Check if Docker is installed, install if not
 if ! command_exists docker; then
@@ -35,18 +41,13 @@ if ! command_exists docker; then
 fi
 
 # Add current user to the docker group
-usermod -aG docker "$CURRENT_USER"
+sudo usermod -aG docker "$CURRENT_USER"
 
 # Refresh permissions for docker
 newgrp docker
 
 # Make sure the user owns the .docker dir 
 sudo chown -R $CURRENT_USER /home/$CURRENT_USER/.docker
-
-# Install docker-compose
-if ! command_exists docker-compose; then
-    sudo apt-get install docker-compose -y
-fi
 
 # Build and start docker containers
 docker compose up -d
