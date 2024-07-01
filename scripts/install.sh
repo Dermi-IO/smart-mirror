@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source helper_functions.sh
+source $HOME/smarty/install_helpers.sh
 
 # Get the user the triggered this, since it was run via sudo we need to do it via logname
 CURRENT_USER="$(logname)"
